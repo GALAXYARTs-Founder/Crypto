@@ -1,0 +1,21 @@
+# Защита директории загрузок
+Options -Indexes
+Order Allow,Deny
+Deny from all
+<FilesMatch "\.(jpg|jpeg|png|gif|svg)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Запрет выполнения PHP
+<FilesMatch "\.php$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Дополнительная защита
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{SCRIPT_FILENAME} -f
+    RewriteRule ^.*\.php$ - [F,L]
+</IfModule>

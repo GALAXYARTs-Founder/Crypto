@@ -1,0 +1,126 @@
+# Защита .htaccess
+<Files .htaccess>
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Защита файлов конфигурации
+<FilesMatch "(config\.php|includes/.*\.php)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Запрет просмотра директорий
+Options -Indexes
+
+# Включение движка Apache Rewrite
+RewriteEngine On
+
+# Базовая директория сайта (изменить на ваш путь, если сайт в подкаталоге)
+# RewriteBase /
+
+# Защита от XSS и Clickjacking
+<IfModule mod_headers.c>
+    # Защита от XSS для современных браузеров
+    Header set X-XSS-Protection "1; mode=block"
+    
+    # Защита от Clickjacking
+    Header set X-Frame-Options "SAMEORIGIN"
+    
+    # Запрет MIME-sniffing
+    Header set X-Content-Type-Options "nosniff"
+    
+    # Настройка CSP (Content Security Policy)
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'self';"
+    
+    # Включение стрикт-транспорта
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+    
+    # Запрет встраивания страниц сайта в iframes
+    Header set X-Frame-Options "SAMEORIGIN"
+    
+    # Определение типа документа
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
+
+# Запрет доступа к системным файлам
+<FilesMatch "^(\.env|\.git|composer\.json|composer\.lock|package\.json|package-lock\.json)">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Запрет доступа к директориям, которые начинаются с точки
+RedirectMatch 404 /\..*$
+
+# Защита от вставки скриптов
+<IfModule mod_rewrite.c>
+    RewriteCond %{QUERY_STRING} (\<|%3C).*script.*(\>|%3E) [NC,OR]
+    RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+    RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
+    RewriteRule ^(.*)$ index.php [F,L]
+</IfModule>
+
+# Перенаправление на HTTPS (раскомментировать на продакшне)
+# <IfModule mod_rewrite.c>
+#     RewriteCond %{HTTPS} off
+#     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>
+
+# Запрет доступа к административной части неавторизованным пользователям
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_URI} ^/admin/.*$
+    RewriteCond %{HTTP_COOKIE} !cryptolw_session [NC]
+    RewriteRule ^(.*)$ index.php [L,R=301]
+</IfModule>
+
+# Кэширование статических файлов
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Кэширование изображений (1 месяц)
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    
+    # Кэширование CSS/JS файлов (1 неделя)
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType text/javascript "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+    
+    # Кэширование шрифтов (1 месяц)
+    ExpiresByType application/font-woff "access plus 1 month"
+    ExpiresByType application/font-woff2 "access plus 1 month"
+    ExpiresByType font/woff "access plus 1 month"
+    ExpiresByType font/woff2 "access plus 1 month"
+</IfModule>
+
+# Сжатие (GZIP)
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript text/javascript application/json application/xml image/svg+xml
+</IfModule>
+
+# Обработка ошибок
+ErrorDocument 403 /error.php?code=403
+ErrorDocument 404 /error.php?code=404
+ErrorDocument 500 /error.php?code=500
+
+# Определение PHP версии
+<IfModule mod_php.c>
+    php_value max_execution_time 60
+    php_value post_max_size 10M
+    php_value upload_max_filesize 5M
+    php_value memory_limit 128M
+    php_flag display_errors off
+    php_flag display_startup_errors off
+    php_flag log_errors on
+    php_value error_log logs/php_errors.log
+    php_flag allow_url_fopen off
+    php_flag allow_url_include off
+    php_flag enable_dl off
+    php_flag expose_php off
+    php_flag register_globals off
+    php_flag track_errors off
+    php_flag session.cookie_httponly on
+</IfModule>
