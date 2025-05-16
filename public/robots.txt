@@ -1,0 +1,50 @@
+# Robots.txt file for CryptoLogoWall
+# https://cryptologowall.example.com
+
+# Allow all robots full access by default
+User-agent: *
+Allow: /
+
+# Disallow Admin Area
+Disallow: /admin/
+Disallow: /includes/
+Disallow: /sql/
+Disallow: /backups/
+Disallow: /logs/
+
+# Disallow specific files
+Disallow: /config.php
+Disallow: /webhook.php
+Disallow: /generate_sitemap.php
+Disallow: /*.sql$
+Disallow: /*.log$
+Disallow: /*.txt$
+Disallow: /*.md$
+Disallow: /*.zip$
+
+# Common Development Files
+Disallow: /*.json$
+Disallow: /*.lock$
+Disallow: /*.md$
+Disallow: /.git/
+Disallow: /.gitignore
+Disallow: /.htaccess
+
+# Allow important assets
+Allow: /assets/css/
+Allow: /assets/js/
+Allow: /assets/img/
+Allow: /uploads/
+
+# Crawl delay
+Crawl-delay: 10
+
+# Sitemap location
+Sitemap: https://cryptologowall.example.com/sitemap.xml
+
+# Add different rules for specific bots if needed
+# User-agent: Googlebot
+# Allow: /
+
+# User-agent: Bingbot
+# Allow: /

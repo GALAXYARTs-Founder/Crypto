@@ -18,13 +18,22 @@ class Lang {
     
     // Инициализация языковой системы
     private function init() {
-        // Определяем язык пользователя
-        if (isset($_SESSION['user_lang']) && in_array($_SESSION['user_lang'], $this->availableLanguages)) {
+        // Проверяем наличие параметра 'lang' в URL
+        if (isset($_GET['lang']) && in_array($_GET['lang'], $this->availableLanguages)) {
+            $this->currentLang = $_GET['lang'];
+            $_SESSION['user_lang'] = $this->currentLang;
+            setcookie('user_lang', $this->currentLang, time() + (86400 * 30), '/'); // Куки на 30 дней
+        }
+        // Если нет в URL, проверяем в сессии
+        elseif (isset($_SESSION['user_lang']) && in_array($_SESSION['user_lang'], $this->availableLanguages)) {
             $this->currentLang = $_SESSION['user_lang'];
-        } elseif (isset($_COOKIE['user_lang']) && in_array($_COOKIE['user_lang'], $this->availableLanguages)) {
+        }
+        // Если нет в сессии, проверяем в куках
+        elseif (isset($_COOKIE['user_lang']) && in_array($_COOKIE['user_lang'], $this->availableLanguages)) {
             $this->currentLang = $_COOKIE['user_lang'];
             $_SESSION['user_lang'] = $this->currentLang;
-        } else {
+        }
+        else {
             // Определяем язык по заголовку Accept-Language
             $this->currentLang = $this->detectLanguage();
             $_SESSION['user_lang'] = $this->currentLang;

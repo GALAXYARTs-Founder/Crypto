@@ -25,6 +25,14 @@ $latestLogos = $db->fetchAll(
 // Заголовок страницы
 $pageTitle = __('site_name') . ' - ' . __('tagline', 'Crypto Logo Wall');
 
+// Получаем текущий URL без параметров lang (для корректной смены языка)
+$currentUrl = strtok($_SERVER["REQUEST_URI"], '?');
+// Сохраняем все GET параметры кроме lang для добавления к ссылкам смены языка
+$queryParams = $_GET;
+if (isset($queryParams['lang'])) {
+    unset($queryParams['lang']);
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $lang->getCurrentLanguage(); ?>">
@@ -283,6 +291,8 @@ $pageTitle = __('site_name') . ' - ' . __('tagline', 'Crypto Logo Wall');
             transition: background-color 0.2s ease;
             display: flex;
             align-items: center;
+            text-decoration: none;
+            color: #fff;
         }
         
         .lang-option:hover {
@@ -310,7 +320,7 @@ $pageTitle = __('site_name') . ' - ' . __('tagline', 'Crypto Logo Wall');
                     $langNames = $lang->getLanguageNames();
                     ?>
                     <span class="flag-icon flag-icon-<?php echo $currentLang; ?>">
-                        <img src="assets/img/flags/<?php echo $currentLang; ?>.svg" alt="<?php echo $langNames[$currentLang]; ?>" class="lang-flag">
+                        <img src="assets/img/flags/flag-<?php echo $currentLang; ?>.svg" alt="<?php echo $langNames[$currentLang]; ?>" class="lang-flag">
                     </span>
                     <span class="ml-2 hidden md:inline"><?php echo $langNames[$currentLang]; ?></span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="ml-1" viewBox="0 0 16 16">
@@ -320,8 +330,8 @@ $pageTitle = __('site_name') . ' - ' . __('tagline', 'Crypto Logo Wall');
                 
                 <div class="lang-dropdown">
                     <?php foreach ($lang->getAvailableLanguages() as $code): ?>
-                    <a href="?lang=<?php echo $code; ?>" class="lang-option" aria-label="<?php echo $langNames[$code]; ?>">
-                        <img src="assets/img/flags/<?php echo $code; ?>.svg" alt="<?php echo $langNames[$code]; ?>" class="lang-flag">
+                    <a href="<?php echo $currentUrl . '?' . http_build_query(array_merge($queryParams, ['lang' => $code])); ?>" class="lang-option" aria-label="<?php echo $langNames[$code]; ?>">
+                        <img src="assets/img/flags/flag-<?php echo $code; ?>.svg" alt="<?php echo $langNames[$code]; ?>" class="lang-flag">
                         <span><?php echo $langNames[$code]; ?></span>
                     </a>
                     <?php endforeach; ?>

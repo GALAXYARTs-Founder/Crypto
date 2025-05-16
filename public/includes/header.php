@@ -1,6 +1,6 @@
 <?php
 /**
- * Шапка сайта
+ * Шапка сайта с SEO оптимизацией
  * CryptoLogoWall
  */
 
@@ -8,6 +8,39 @@
 if (!defined('INCLUDED')) {
     header('HTTP/1.0 403 Forbidden');
     exit('Прямой доступ к файлу запрещен');
+}
+
+// Формируем SEO данные
+$seoTitle = isset($pageTitle) ? $seo->generateTitle($pageTitle, true) : $seo->generateTitle(__('site_name'));
+$seoDescription = isset($pageDescription) ? $pageDescription : $seo->getSettingValue('meta_description');
+$seoKeywords = isset($pageKeywords) ? $pageKeywords : $seo->getSettingValue('meta_keywords');
+$seoCanonical = isset($pageCanonical) ? $pageCanonical : $seo->getCurrentUrl();
+$seoImage = isset($pageImage) ? $pageImage : $seo->getSettingValue('og_image');
+$seoType = isset($pageType) ? $pageType : 'website';
+$seoNoIndex = isset($pageNoIndex) ? $pageNoIndex : false;
+
+// Формируем мета-теги
+$seoMetaTags = $seo->generateMetaTags([
+    'title' => $seoTitle,
+    'description' => $seoDescription,
+    'keywords' => $seoKeywords,
+    'canonical' => $seoCanonical,
+    'og_image' => $seoImage,
+    'og_type' => $seoType,
+    'noindex' => $seoNoIndex,
+    'custom_tags' => isset($customMetaTags) ? $customMetaTags : []
+]);
+
+// Формируем хлебные крошки
+$breadcrumbsHtml = '';
+if (isset($breadcrumbs) && is_array($breadcrumbs)) {
+    $breadcrumbsHtml = $seo->generateBreadcrumbs($breadcrumbs);
+}
+
+// Формируем schema.org разметку
+$schemaHtml = '';
+if (isset($project) && is_array($project)) {
+    $schemaHtml = $seo->generateProjectSchema($project);
 }
 
 // Определяем текущую страницу
@@ -19,13 +52,24 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($pageTitle) ? $pageTitle : __('site_name'); ?></title>
-    <?php if (isset($pageDescription)): ?>
-    <meta name="description" content="<?php echo htmlspecialchars($pageDescription); ?>">
-    <?php endif; ?>
+    <title><?php echo $seoTitle; ?></title>
+    
+    <!-- SEO Meta Tags -->
+    <?php echo $seoMetaTags; ?>
+    
+    <!-- Schema.org Markup -->
+    <?php echo $schemaHtml; ?>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="<?php echo SITE_URL; ?>/assets/img/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="<?php echo SITE_URL; ?>/assets/img/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="<?php echo SITE_URL; ?>/assets/img/apple-touch-icon.png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <!-- Google Analytics -->
+    <?php echo $seo->generateGoogleAnalytics(); ?>
     
     <!-- Дополнительные стили -->
     <style>
@@ -137,6 +181,42 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             margin-right: 8px;
         }
         
+        /* Хлебные крошки */
+        .breadcrumbs {
+            margin-bottom: 20px;
+            padding: 10px 0;
+        }
+
+        .breadcrumbs ol {
+            display: flex;
+            flex-wrap: wrap;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .breadcrumbs li {
+            display: inline-flex;
+            align-items: center;
+            color: #a0aec0;
+            font-size: 14px;
+        }
+
+        .breadcrumbs a {
+            color: #a0aec0;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumbs a:hover {
+            color: #ffffff;
+        }
+
+        .breadcrumbs .separator {
+            margin: 0 8px;
+            color: #4a5568;
+        }
+        
         /* Анимации */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
@@ -191,3 +271,10 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
     </header>
+    
+    <?php if (!empty($breadcrumbsHtml)): ?>
+    <!-- Хлебные крошки -->
+    <div class="container mx-auto px-6 md:px-10">
+        <?php echo $breadcrumbsHtml; ?>
+    </div>
+    <?php endif; ?>
